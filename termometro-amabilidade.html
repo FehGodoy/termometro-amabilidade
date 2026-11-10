@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Termômetro da Amabilidade</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;700&display=swap">
+<style>
+/* Layout: big statement on the left, a vertical thermometer on the right that the group "heats up"; single dark look for TV */
+:root{
+  --bg:#1d1b3a; --bg2:#2a2752; --card:#34306a; --fg:#fbf6ea; --muted:#c9c3e6;
+  --sun:#ffc94a; --cold:#6fb7ff; --hot:#ff6b4a; --good:#5fd39a;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito","Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:radial-gradient(ellipse at 80% 0%,var(--bg2),var(--bg) 70%);color:var(--fg);font-family:var(--body);overflow:hidden;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.stage{height:100%;display:flex;flex-direction:column;max-width:1500px;margin:0 auto;padding-block:2.5vh}
+.top{display:flex;justify-content:space-between;align-items:center;font-family:var(--display);color:var(--muted);font-size:clamp(14px,1.6vw,26px)}
+.dots{display:flex;gap:.5em}.dots i{width:.6em;height:.6em;border-radius:50%;background:var(--card)}.dots i.on{background:var(--sun)}
+.slide{flex:1;display:flex;align-items:center;min-height:0}
+.slide>div{width:100%;animation:pop .45s ease-out}
+@keyframes pop{from{transform:translateY(20px);opacity:.3}to{transform:none;opacity:1}}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,7.5vw,130px);line-height:.95;margin:0;text-wrap:balance}
+h1 span{background:linear-gradient(90deg,var(--cold),var(--sun),var(--hot));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-family:var(--display);font-weight:800;font-size:clamp(28px,4.2vw,76px);line-height:1.08;margin:0 0 .3em;text-wrap:balance}
+.lead{font-size:clamp(18px,2.2vw,38px);color:var(--muted);max-width:30em;line-height:1.35}
+.center{text-align:center}.center .lead{margin:0 auto}
+.tag{font-family:var(--display);color:var(--sun);font-size:clamp(16px,1.8vw,30px);letter-spacing:.04em;text-transform:uppercase}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:2vw;margin-top:4vh}
+.rule{background:var(--card);border-radius:24px;padding:3vh 2vw;font-size:clamp(16px,1.9vw,32px);line-height:1.3}
+.rule b{display:block;font-family:var(--display);font-size:1.8em;color:var(--sun)}
+.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4vw;align-items:center}
+.emo{font-size:clamp(50px,7vw,120px);line-height:1}
+.why{margin-top:3vh;font-size:clamp(17px,2vw,34px);line-height:1.35;border-left:6px solid var(--sun);padding-left:1em;display:none;max-width:28em}
+.why b{color:var(--sun)}
+.revealed .why{display:block}
+/* thermometer */
+.thermo{display:flex;gap:1.2vw;align-items:stretch;height:68vh}
+.tube{position:relative;width:clamp(50px,5vw,90px);border-radius:999px;background:var(--card);overflow:hidden}
+.fill{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(to top,var(--cold),var(--sun) 55%,var(--hot));transition:height .7s cubic-bezier(.3,1.4,.5,1);border-radius:999px}
+.scale{display:flex;flex-direction:column-reverse;justify-content:space-between;padding-block:1vh}
+.lvl{display:flex;align-items:center;gap:.5em;font-family:var(--display);font-size:clamp(14px,1.6vw,28px);color:var(--muted);transition:all .3s;white-space:nowrap}
+.lvl .k{background:var(--card);border-radius:10px;min-width:1.5em;text-align:center;color:var(--fg)}
+.lvl.on{color:var(--fg);transform:scale(1.12);transform-origin:left}
+.lvl.on .k{background:var(--sun);color:var(--bg)}
+.revealed .lvl.sug .k{outline:3px solid var(--good)}
+.lvl .s{display:none;color:var(--good);font-size:.8em}
+.revealed .lvl.sug .s{display:inline}
+.verse{background:var(--card);border-radius:28px;padding:4vh 4vw;margin-top:4vh;font-size:clamp(20px,2.6vw,46px);line-height:1.4}
+.verse mark{background:var(--sun);color:var(--bg);border-radius:8px;padding:0 .2em}
+.verse small{display:block;margin-top:1em;color:var(--muted);font-size:.6em}
+.hint{font-size:clamp(12px,1.2vw,20px);color:var(--muted);text-align:center}
+.nav{display:flex;gap:.6em;justify-content:center;margin-top:1vh;flex-wrap:wrap}
+button{font-family:var(--display);font-size:clamp(14px,1.4vw,24px);background:var(--card);color:var(--fg);border:0;border-radius:14px;padding:.3em 1em;cursor:pointer}
+button:focus-visible{outline:3px solid var(--sun)}
+#lvlbtns button{min-width:2.4em}
+@media (prefers-reduced-motion:reduce){.slide>div{animation:none}.fill{transition:none}}
+@media (max-width:760px){.q,.rules{grid-template-columns:1fr}.thermo{height:50vh}body{overflow:auto}.stage{height:auto;min-height:100%}}
+</style>
+<style>
+*{box-sizing:border-box}body{margin:0}.stage{position:relative;padding:clamp(18px,3vh,38px) clamp(30px,4vw,76px);max-width:1800px}.stage:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 88% 32%,#42518b55,transparent 36%),radial-gradient(circle at 5% 95%,#5c346044,transparent 35%)}.top{font-weight:800;letter-spacing:.06em;text-transform:uppercase}.dots i{width:clamp(8px,.75vw,13px);height:clamp(8px,.75vw,13px);background:#ffffff32}.dots i.on{box-shadow:0 0 16px var(--sun)}.slide>div{animation:pop .55s both}.tag{font-weight:800;letter-spacing:.14em}.q{grid-template-columns:minmax(0,1fr) minmax(360px,40%);gap:3vw}.q h2{font-size:clamp(40px,5vw,92px);line-height:.98}.thermo{position:relative;height:min(68vh,680px);padding:clamp(22px,2.5vw,44px);border:1px solid #ffffff25;border-radius:32px;background:linear-gradient(150deg,#ffffff17,#ffffff08);box-shadow:0 24px 70px #090b2455;gap:2vw}.tube{border:4px solid #ffffff44;background:#111733;box-shadow:inset 0 0 20px #0007}.fill{background:linear-gradient(to top,#75bbff,#91e3d0 35%,#ffd05b 65%,#ff8869);box-shadow:0 0 24px #ffc94a99}.lvl{font-weight:900;font-size:clamp(17px,1.55vw,27px);gap:.6em}.lvl .k{background:#ffffff22;min-width:1.7em;padding:.1em}.lvl.on{transform:translateX(8px)}.revealed .lvl.sug .k{outline-color:#79e3b5}.why{background:#ffc94a14;padding:20px 25px;border-radius:0 16px 16px 0;animation:pop .4s both}.rule{border:1px solid #ffffff22;background:#ffffff10;box-shadow:0 18px 40px #0c0c2d33}.verse{border:1px solid #ffffff26;box-shadow:0 25px 70px #08091d55}button{border:1px solid #ffffff2b;background:#ffffff19;font-weight:800;transition:background .2s,transform .2s}button:hover{background:#ffffff32;transform:translateY(-2px)}button:active{transform:translateY(0)}#next{background:var(--sun);color:var(--bg)}#next:hover{background:#ffdc85}.nav{gap:.45em}.hint{margin-top:1.2vh;font-weight:700}.lead{font-weight:700}.center h1 span{text-shadow:0 0 60px #ffc94a33}@media(max-height:720px) and (min-width:761px){.thermo{height:62vh;padding:20px}.emo{font-size:55px}.q h2{font-size:clamp(34px,4vw,72px)}.why{font-size:21px;padding:12px 18px}}@media(max-width:760px){.q{grid-template-columns:1fr}.thermo{height:500px}.stage{padding:20px}.rules{gap:12px}}
+</style></head><body>
+<style>.scene-image{display:block;width:min(100%,490px);height:clamp(155px,23vh,260px);object-fit:cover;object-position:center;border-radius:22px;margin:0 0 2.5vh;border:1px solid #ffffff30;box-shadow:0 18px 45px #070b2755}.q h2{font-size:clamp(34px,4.2vw,76px)}.thermo{height:min(68vh,660px)}.lvl{gap:.85em}.lvl .k{font-size:1.1em}.nav button{min-height:42px}#lvlbtns button{min-width:2.4em}.rules .rule b{font-size:1.5em}@media(max-height:720px) and (min-width:761px){.scene-image{height:clamp(110px,18vh,180px);width:min(100%,330px);margin-bottom:1vh}.q h2{font-size:clamp(30px,3.6vw,64px)}}@media(max-width:760px){.scene-image{height:240px}}</style>
+
+<div class="stage">
+  <div class="top"><span>Célula · Fruto do Espírito</span><div class="dots" id="dots"></div></div>
+  <div class="slide" id="slide"></div>
+  <div class="nav"><button id="prev">◀ Voltar</button><span id="lvlbtns"></span><button id="reveal">💡 Revelar</button><button id="full">⛶</button><button id="next">Avançar ▶</button></div>
+  <div class="hint">Teclas 1–5: posição que o grupo escolheu · R: revelar · F: tela cheia · setas: navegar</div>
+</div>
+
+<script>
+const LV=[["1","Gelado"],["2","Morno"],["3","Educado"],["4","Gentil"],["5","Amável de verdade"]];
+const S=[
+ {type:"cover"},{type:"rules"},
+ {img:"01-resposta.png",q:"Responder só “tá bom.” quando alguém te conta algo animado.",s:1,
+  w:"Não é grosseria, mas pode soar distante. O <b>jeito de responder</b> também comunica cuidado."},
+ {img:"02-motorista.png",q:"Agradecer o motorista do ônibus ao descer.",s:2,
+  w:"Um gesto educado. Pode expressar mais cuidado quando a gente <b>reconhece a pessoa</b>, e não só repete um costume."},
+ {img:"09-conselho.png",q:"Alguém desabafa. Antes de terminar, você oferece um conselho que parece ótimo.",s:2,
+  w:"O conselho pode ser bom. Mas será que a pessoa precisava de uma solução naquele momento, ou de <b>alguém que a escutasse</b>?"},
+ {img:"03-elogio.png",q:"Você elogia alguém pelas costas, mas nunca diz a ela o que admira.",s:3,
+  w:"Falar bem de alguém sem plateia é bonito. Será que também faria bem <b>a própria pessoa ouvir</b> isso de você?"},
+ {img:"04-chefe-porteiro.png",q:"Ser super simpático com o chefe, e seco com o porteiro.",s:0,
+  w:"A simpatia muda conforme a posição da pessoa. <b>Quem recebe nosso melhor trato?</b>"},
+ {img:"10-ajuda-reconhecimento.png",q:"Você ajuda a arrumar tudo depois da reunião, mas se chateia quando ninguém agradece.",s:2,
+  w:"A ajuda foi real. A frustração também. Vale conversar: <b>o reconhecimento virou condição para cuidar?</b>"},
+ {img:"05-silencio.png",q:"Ficar calado pra não brigar, mas guardar mágoa.",s:1,
+  w:"Evitar uma briga pode ser prudente. Mas o silêncio, sozinho, <b>não resolve o que ficou no coração</b>."},
+ {img:"06-mensagem.png",q:"Você escreve para quem sumiu da célula: “Sentimos sua falta. Está tudo bem?”",s:4,
+  w:"Há cuidado em <b>tomar a iniciativa</b>. A conversa pode acolher, desde que haja espaço para a pessoa responder no tempo dela."},
+ {img:"11-verdade-publica.png",q:"Você diz uma verdade necessária a um amigo, mas na frente de todo mundo.",s:1,
+  w:"A verdade pode ser necessária. <b>O lugar e o modo</b> podem proteger ou expor a pessoa. Como você receberia essa conversa?"},
+ {img:"07-fila.png",q:"Deixar passar na frente da fila alguém com poucas coisas.",s:3,
+  w:"Um gesto simples de atenção. A gente abre mão de um pouco do próprio tempo <b>para facilitar o dia de alguém</b>."},
+ {img:"08-conversa.png",q:"Você chama alguém em particular para uma correção necessária, mas a pessoa está num dia muito difícil.",s:3,
+  w:"Privacidade e carinho ajudam. Às vezes também importa <b>perceber o momento</b> e perguntar se a pessoa consegue conversar agora."},
+ {img:"12-limite.png",q:"Um amigo pede mais uma ajuda. Você está esgotado e responde com carinho: “Hoje não consigo.”",s:3,
+  w:"Dizer não com respeito pode ser cuidadoso. <b>Amabilidade não exige aceitar tudo</b>; vale pensar no tom e no que é possível oferecer."},
+ {type:"turn"},{type:"verse"}
+];
+const slideEl=document.getElementById("slide"),dots=document.getElementById("dots");
+let i=0,revealed=false,vote=-1;
+document.getElementById("lvlbtns").innerHTML=LV.map((l,k)=>`<button data-k="${k}" title="${l[1]}">${k+1}</button>`).join(" ");
+document.querySelectorAll("#lvlbtns button").forEach(b=>b.onclick=()=>setVote(+b.dataset.k));
+function thermo(s){return `<div class="thermo"><div class="tube"><div class="fill" id="fill"></div></div><div class="scale">${LV.map((l,k)=>`<div class="lvl ${k===s.s?"sug":""}" data-k="${k}"><span class="k">${k+1}</span>${l[1]} <span class="s">uma leitura</span></div>`).join("")}</div></div>`}
+function render(){
+  const s=S[i];revealed=false;vote=-1;let h="";
+  if(s.type==="cover")h=`<div class="center"><div class="tag">Dinâmica</div><h1>Termômetro da<br><span>Amabilidade</span></h1><p class="lead">Quão amável é essa atitude? O grupo decide a temperatura.</p></div>`;
+  else if(s.type==="rules")h=`<div><h2>Como funciona</h2><div class="rules">
+   <div class="rule"><b>1</b>Aparece uma atitude do dia a dia.</div>
+   <div class="rule"><b>2</b>O grupo discute e decide: de 1 (gelado) até 5 (amável). Pode discordar!</div>
+   <div class="rule"><b>3</b>A gente sobe o termômetro e revela uma leitura possível. Não é gabarito.</div></div></div>`;
+  else if(s.type==="turn")h=`<div class="center"><div class="tag">Antes da palavra</div><h2>Não é só o que fazemos.<br><span style="color:var(--sun)">É como tratamos as pessoas.</span></h2><p class="lead">Educação pode ser um bom começo. A amabilidade nos convida a olhar para o outro, mesmo quando não há retorno.<br><b style="color:var(--sun)">O fruto nasce do Espírito.</b></p></div>`;
+  else if(s.type==="verse")h=`<div class="center"><div class="tag">A Palavra de hoje</div><div class="verse">“Mas o fruto do Espírito é amor, alegria, paz, paciência, <mark>amabilidade</mark>, bondade, fidelidade, mansidão e domínio próprio.”<small>Gálatas 5:22-23 (NVI)</small></div></div>`;
+  else{const n=S.slice(0,i).filter(x=>x.q).length+1,t=S.filter(x=>x.q).length;
+   h=`<div class="q" id="q"><div><div class="tag">Atitude ${n} de ${t}</div><img class="scene-image" src="assets/termometro/${s.img}" alt="Ilustração da situação ${n}"><h2>${s.q}</h2><div class="why">${s.w}</div></div>${thermo(s)}</div>`;}
+  slideEl.innerHTML=`<div>${h}</div>`;
+  dots.innerHTML=S.map((_,k)=>`<i class="${k<=i?"on":""}"></i>`).join("");
+  document.getElementById("lvlbtns").hidden=!s.q;document.getElementById("reveal").hidden=!s.q;document.getElementById("prev").disabled=i===0;
+}
+function setVote(k){if(!S[i].q)return;vote=k;document.getElementById("fill").style.height=((k+1)/5*100)+"%";
+  document.querySelectorAll(".lvl").forEach(el=>el.classList.toggle("on",+el.dataset.k===k))}
+function reveal(){const s=S[i];if(!s.q||revealed)return;revealed=true;document.getElementById("q").classList.add("revealed");if(vote<0)setVote(s.s)}
+function next(){if(S[i].q&&!revealed){reveal();return}if(i<S.length-1){i++;render()}}
+function prev(){if(i>0){i--;render()}}
+document.addEventListener("keydown",e=>{
+  if(/^[1-5]$/.test(e.key)){setVote(+e.key-1);return}
+  if(e.key==="r"||e.key==="R"){reveal();return}
+  if(e.key==="f"||e.key==="F"){document.getElementById("full").click();return}
+  if(["ArrowRight","ArrowDown"," ","Enter","PageDown"].includes(e.key)){e.preventDefault();next()}
+  if(["ArrowLeft","ArrowUp","PageUp","Backspace"].includes(e.key)){e.preventDefault();prev()}});
+document.getElementById("next").onclick=next;document.getElementById("prev").onclick=prev;document.getElementById("reveal").onclick=reveal;
+document.getElementById("full").onclick=()=>{try{document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}};
+render();
+</script></body></html>
+
