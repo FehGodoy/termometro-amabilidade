@@ -1,6 +1,6 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/", "destination": "/termometro-amabilidade.html" }
+    { "source": "/", "destination": "/bondade-ou-boazinha.html" }
   ]
 }
